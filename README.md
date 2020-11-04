@@ -5,5 +5,7 @@ L’utilisation du terme DataScience dans le titre sera sûrement considérée p
 Vous implémenterez un modèle de classification linéaire, dans la continuité du sujet linear regression : une logistic regression. Nous vous encourageons d’ailleurs beaucoup à vous créer une bibliothèque de machine learning au fur et à mesure que vous avancerez dans la branche.
 
 En somme : 
+  
   • Vous apprendrez à lire un jeu de données, à le visualiser de différentes manières, à sélectionner et nettoyer vos données.
+  
   • Vous mettrez en place une régression logistique qui vous permettra de résoudre des problèmes de classification.
