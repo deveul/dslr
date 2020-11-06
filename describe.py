@@ -4,6 +4,7 @@
 import argparse
 import os.path
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import numpy as np
 import math
 from tabulate import tabulate
@@ -60,18 +61,18 @@ def analyse_data(data_file):
     df = pd.read_csv(data_file)
     my_array = np.array(['count', 'mean', 'std', 'minimum', '25%', '50%', '75%', 'maximum']).reshape(8, 1)
     np.set_printoptions(suppress=True)
-    headers = []
+    headers = ['']
     for column in df.columns:
-        if df[column].dtypes == 'int64' or df[column].dtypes == 'float64':
+        if is_numeric_dtype(df[column].dtypes):
             headers.append(column)
             count, mean = dslr_sum(df[column])
             std = calculate_std(df[column], mean, count)
             minimum, maximum, quarter, median, three_quarter = get_quantile(df[column], count)
-            complete = [count, mean, std, minimum, quarter, median, three_quarter, maximum]
-            for index, _ in enumerate(complete):
-                complete[index] = [format(complete[index], '.6f')]
-                # complete[index] = [format(float(Decimal(complete[index]).quantize(Decimal('1e-6'))), '.6f')]
-            new_column = complete
+            # complete = [count, mean, std, minimum, quarter, median, three_quarter, maximum]
+            # for index, _ in enumerate(complete):
+                # complete[index] = [format(complete[index], '.6f')]
+                # complete[index] = [complete[index]]
+            new_column = [[count], [mean], [std], [minimum], [quarter], [median], [three_quarter], [maximum]]
             my_array = np.append(my_array, new_column, axis=1)
     return my_array, headers
 
@@ -88,7 +89,9 @@ def main():
     parser.add_argument("data_file", help="the csv file containing the data set", type=lambda x: is_valid_file(parser, x))
     args = parser.parse_args()
     my_array, headers = analyse_data(args.data_file)
-    print(tabulate(my_array, headers, tablefmt="fancy_grid", floatfmt=".6f"))
+    # pd.set_option('display.expand_frame_repr', False)
+    # print(pd.DataFrame(data=my_array, columns=headers).to_string(index=False))
+    print(tabulate(my_array, headers, tablefmt="plain", floatfmt=".6f"))
 
 if __name__ == "__main__":
     main()
