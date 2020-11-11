@@ -17,7 +17,6 @@ def is_valid_file(parser, arg):
 
 def read_data(data_file):
     df = pd.read_csv(data_file)
-    print(df.describe())
     plt.scatter([x for x in df['Astronomy']], [y for y in df['Defense Against the Dark Arts']], c='blue', alpha=0.5, label='Students')
     plt.title('Correlated features')
     plt.legend()
