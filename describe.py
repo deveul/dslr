@@ -59,7 +59,7 @@ def get_quantile(column, count):
 
 def analyse_data(data_file):
     df = pd.read_csv(data_file)
-    my_array = np.array(['count', 'mean', 'std', 'minimum', '25%', '50%', '75%', 'maximum']).reshape(8, 1)
+    describe = np.array(['count', 'mean', 'std', 'minimum', '25%', '50%', '75%', 'maximum']).reshape(8, 1)
     np.set_printoptions(suppress=True)
     headers = ['']
     for column in df.columns:
@@ -73,8 +73,8 @@ def analyse_data(data_file):
                 # complete[index] = [format(complete[index], '.6f')]
                 # complete[index] = [complete[index]]
             new_column = [[count], [mean], [std], [minimum], [quarter], [median], [three_quarter], [maximum]]
-            my_array = np.append(my_array, new_column, axis=1)
-    return my_array, headers
+            describe = np.append(describe, new_column, axis=1)
+    return describe, headers
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -88,10 +88,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("data_file", help="the csv file containing the data set", type=lambda x: is_valid_file(parser, x))
     args = parser.parse_args()
-    my_array, headers = analyse_data(args.data_file)
+    describe, headers = analyse_data(args.data_file)
     # pd.set_option('display.expand_frame_repr', False)
-    # print(pd.DataFrame(data=my_array, columns=headers).to_string(index=False))
-    print(tabulate(my_array, headers, tablefmt="plain", floatfmt=".6f"))
+    # print(pd.DataFrame(data=describe, columns=headers).to_string(index=False))
+    print(tabulate(describe, headers, tablefmt="plain", floatfmt=".6f"))
 
 if __name__ == "__main__":
     main()
