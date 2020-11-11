@@ -17,9 +17,12 @@ def is_valid_file(parser, arg):
 
 def read_data(data_file):
     df = pd.read_csv(data_file)
+    axes = plt.gca()
+    axes.set_xlabel("Astronomy")
+    axes.set_ylabel("Defense Against the Dark Arts")
     plt.scatter([x for x in df['Astronomy']], [y for y in df['Defense Against the Dark Arts']], c='blue', alpha=0.5, label='Students')
     plt.title('Correlated features')
-    plt.legend()
+    plt.legend(loc="upper right")
     plt.show()
 
 def main():
