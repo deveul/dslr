@@ -178,7 +178,7 @@ def main():
     describe, headers = analyse_data(args.data_file, args.advanced)
     # pd.set_option('display.expand_frame_repr', False)
     # print(pd.DataFrame(data=describe, columns=headers).to_string(index=False))
-    print(tabulate(describe, headers, tablefmt="plain", floatfmt=".6f"))
+    print(tabulate(describe, headers, tablefmt="github", floatfmt=".6f"))
 
 if __name__ == "__main__":
     main()

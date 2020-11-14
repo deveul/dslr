@@ -5,10 +5,7 @@ import argparse
 import os.path
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-import numpy as np
-import math
 from matplotlib import pyplot as plt
-from tabulate import tabulate
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):

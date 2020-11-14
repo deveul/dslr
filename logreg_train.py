@@ -6,7 +6,7 @@ import os.path
 import json
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from matplotlib import pyplot as plt
+import numpy as np
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -39,6 +39,12 @@ class Train:
         except PermissionError:
             print("Vous n'avez pas les droits pour écrire dans le fichier value_lr.json")
             exit()
+
+    def sigmoid(self, x):
+        return 1/(1+np.exp(-x))
+
+    def square_loss(self, y_pred, target):
+        return np.mean(pow((y_pred - target),2))
 
     def train(self):
         pass
