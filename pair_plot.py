@@ -7,6 +7,8 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 # from pandas.plotting import scatter_matrix
 from matplotlib import pyplot as plt
+import matplotlib
+import seaborn as sns
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -18,8 +20,9 @@ def is_valid_file(parser, arg):
 
 def read_data(data_file):
     df = pd.read_csv(data_file)
-    df = df.drop(columns='Index')
-    pd.plotting.scatter_matrix(df, alpha = 0.2, figsize = (8, 8), diagonal = 'hist')
+    df = df.drop(columns=['Index', 'Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts'])
+    palette={"Gryffindor": "r", "Slytherin": "darkgreen", "Ravenclaw": "royalblue", "Hufflepuff": "gold"}
+    sns.pairplot(df, hue="Hogwarts House", height=2, plot_kws={"s": 3}, palette=palette)
     plt.show()
 
 def main():
