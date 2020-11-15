@@ -53,6 +53,11 @@ class Histogram:
         for index, column in enumerate(self.df.columns):
             if is_numeric_dtype(self.df[column].dtypes) and index > 0:
                 stack.append(column)
+        try:
+            self.stack_index = stack.index('Arithmancy')
+        except:
+            print("Error: it seems that the datas were modified.")
+            exit()
         self.stack = stack
 
     def redraw(self, event): 
