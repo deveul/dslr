@@ -8,8 +8,6 @@ from pandas.api.types import is_numeric_dtype
 import numpy as np
 import math
 from tabulate import tabulate
-import scipy.stats as stats
-import statistics
 
 # from decimal import Decimal
 
