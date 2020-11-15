@@ -25,47 +25,98 @@ def positive_int_type(arg):
         raise argparse.ArgumentTypeError("Argument must be an int, from 1 to 100")
     return nb
 
-def display_histogram(column, overlapping, bins, density, df, gryf, slyth, ravenclaw, hufflepuff):
-    axes = plt.gca()
-    y1=gryf[column]
-    y2=slyth[column]
-    y3=ravenclaw[column]
-    y4=hufflepuff[column]
-    colors = ['r', 'g', 'b', 'y']
-    bins = bins
-    if overlapping and density:
-        plt.hist(y3, bins, color='b', alpha=0.5, density=True, label='Ravenclaw')
-        plt.hist(y4, bins, color='y', alpha=0.5, density=True, label='Hufflepuff')
-        plt.hist(y1, bins, color='r', alpha=0.5, density=True, label='Gryffindor')
-        plt.hist(y2, bins, color='g', alpha=0.5, density=True, label='Slytherin')
-    elif overlapping:
-        plt.hist(y3, bins, color='b', alpha=0.5, label='Ravenclaw')
-        plt.hist(y4, bins, color='y', alpha=0.5, label='Hufflepuff')
-        plt.hist(y1, bins, color='r', alpha=0.5, label='Gryffindor')
-        plt.hist(y2, bins, color='g', alpha=0.5, label='Slytherin')
-    elif density:
-        plt.hist([y1,y2, y3, y4], bins, density = True, color=colors, label=['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'])
-    else:
-        plt.hist([y1,y2, y3, y4], bins, color=colors, label=['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'])
-    axes.set_xlim(min(df[column]), max(df[column]))
-    axes.set_xlabel("Grades")
-    axes.set_ylabel("Count by house")
-    plt.title('Grades repartition for {}'.format(column))
-    plt.legend()
-    plt.show()
+class Histogram:
+    def __init__(self, args):
+        self.bins = args.bins
+        self.density = args.density
+        self.overlapping = args.overlapping
+        self.all_classes = args.all_classes
+        self.df = None,
+        self.gryf = None
+        self.slyt = None
+        self.rave = None
+        self.huff = None
+        self.stack = None
+        self.stack_index = 0
+        self.fig = plt.figure()
+        self.colors = ['r', 'g', 'b', 'y']
 
-def read_data(data_file, all_classes, overlapping, bins, density):
-    df = pd.read_csv(data_file)
-    df_gryffindor = df[df['Hogwarts House'] == "Gryffindor"]
-    df_slytherin = df[df['Hogwarts House'] == "Slytherin"]
-    df_ravenclaw = df[df['Hogwarts House'] == "Ravenclaw"]
-    df_hufflepuff = df[df['Hogwarts House'] == "Hufflepuff"]
-    if all_classes == True:
-        for index, column in enumerate(df.columns):
-            if is_numeric_dtype(df[column].dtypes) and index > 0:
-                display_histogram(column, overlapping, bins, density, df, df_gryffindor, df_slytherin, df_ravenclaw, df_hufflepuff)
-    else:
-        display_histogram('Arithmancy', overlapping, bins, density, df, df_gryffindor, df_slytherin, df_ravenclaw, df_hufflepuff)
+    def read_data(self, data_file):
+        self.df = pd.read_csv(data_file)
+        self.gryf = self.df[self.df['Hogwarts House'] == "Gryffindor"]
+        self.slyt = self.df[self.df['Hogwarts House'] == "Slytherin"]
+        self.rave = self.df[self.df['Hogwarts House'] == "Ravenclaw"]
+        self.huff = self.df[self.df['Hogwarts House'] == "Hufflepuff"]
+
+    def get_stack(self):
+        stack = []
+        for index, column in enumerate(self.df.columns):
+            if is_numeric_dtype(self.df[column].dtypes) and index > 0:
+                stack.append(column)
+        self.stack = stack
+
+    def redraw(self, event): 
+        event.canvas.figure.clear()
+        y1=self.gryf[self.stack[self.stack_index]]
+        y2=self.slyt[self.stack[self.stack_index]]
+        y3=self.rave[self.stack[self.stack_index]]
+        y4=self.huff[self.stack[self.stack_index]]
+        if not self.overlapping:
+            event.canvas.figure.gca().hist([y1,y2, y3, y4], self.bins, density = self.density, color=self.colors, label=['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'])
+        else:
+            event.canvas.figure.gca().hist(y1, self.bins, density=self.density, alpha=0.5, color='r', label='Gryffindor')
+            event.canvas.figure.gca().hist(y2, self.bins, density=self.density, alpha=0.5, color='g', label='Slytherin')
+            event.canvas.figure.gca().hist(y3, self.bins, density=self.density, alpha=0.5, color='b', label='Ravenclaw')
+            event.canvas.figure.gca().hist(y4, self.bins, density=self.density, alpha=0.5, color='yellow', label='Hufflepuff')
+        axes = plt.gca()
+        axes.set_xlabel("Grades")
+        axes.set_ylabel("Count by house")
+        plt.title('Grades repartition for {}'.format(self.stack[self.stack_index]))
+        plt.legend(loc="upper left")
+        event.canvas.draw()
+
+    def press(self, event):
+        if event.key != 'q':
+            if self.all_classes:
+                if event.key == 'right':
+                    self.stack_index += 1
+                elif event.key == 'left':
+                    self.stack_index -= 1
+            if event.key == 'o':
+                self.overlapping = not self.overlapping
+            elif event.key == 'd':
+                self.density = not self.density
+            elif event.key == 'a':
+                self.all_classes = not self.all_classes
+            if self.stack_index > len(self.stack) - 1:
+                self.stack_index = 0
+            elif self.stack_index < 0:
+                self.stack_index = len(self.stack) - 1
+        
+            self.redraw(event)
+
+    def display_histogram(self):
+        y1=self.gryf[self.stack[self.stack_index]]
+        y2=self.slyt[self.stack[self.stack_index]]
+        y3=self.rave[self.stack[self.stack_index]]
+        y4=self.huff[self.stack[self.stack_index]]
+        if not self.overlapping:
+            plt.hist([y1,y2, y3, y4], self.bins, density = self.density, color=self.colors, label=['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff'])
+        else:
+            plt.hist(y1, self.bins, density=self.density, alpha=0.5, color='r', label='Gryffindor')
+            plt.hist(y2, self.bins, density=self.density, alpha=0.5, color='g', label='Slytherin')
+            plt.hist(y3, self.bins, density=self.density, alpha=0.5, color='b', label='Ravenclaw')
+            plt.hist(y4, self.bins, density=self.density, alpha=0.5, color='yellow', label='Hufflepuff')
+        axes = plt.gca()
+        axes.set_xlabel("Grades")
+        axes.set_ylabel("Count by house")
+        plt.title('Grades repartition for {}'.format(self.stack[self.stack_index]))
+        plt.legend(loc="upper left")
+
+        self.fig.canvas.mpl_connect('key_press_event', self.press)
+    
+        plt.show()
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -75,7 +126,10 @@ def main():
     parser.add_argument("-d", "--density", help="y axis in percentage instead of number of students", action="store_true")
     parser.add_argument("-b", "--bins", help="Number of bins (intervals) per house", type=positive_int_type, default=10)
     args = parser.parse_args()
-    read_data(args.data_file, args.all_classes, args.overlapping, args.bins, args.density)
+    histogram = Histogram(args)
+    histogram.read_data(args.data_file)
+    histogram.get_stack()
+    histogram.display_histogram()
 
 if __name__ == "__main__":
     main()
