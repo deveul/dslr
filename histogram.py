@@ -31,7 +31,7 @@ class Histogram:
         self.density = args.density
         self.overlapping = args.overlapping
         self.all_classes = args.all_classes
-        self.df = None,
+        self.df = None
         self.gryf = None
         self.slyt = None
         self.rave = None
