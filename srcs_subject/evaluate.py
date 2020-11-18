@@ -1,7 +1,6 @@
-#!/usr/bin/python3
-
 """
 Put these files in the same folder as `houses.csv` and `dataset_truth.csv`.
+
 Usage:
     $ python evaluate.py
 """
@@ -25,8 +24,8 @@ def load_csv(filename):
     return datas
 
 if __name__ == '__main__':
-    if os.path.isfile("data/dataset_truth.csv"):
-        truths = load_csv("data/dataset_truth.csv")
+    if os.path.isfile("dataset_truth.csv"):
+        truths = load_csv("dataset_truth.csv")
     else:
         sys.exit("Error: missing dataset_truth.csv in the current directory.")
     if os.path.isfile("houses.csv"):
@@ -45,3 +44,4 @@ if __name__ == '__main__':
         print("Good job! Mc Gonagall congratulates you.")
     else:
         print("Too bad, Mc Gonagall flunked you.")
+
