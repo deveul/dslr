@@ -30,7 +30,6 @@ class Histogram:
         self.bins = args.bins
         self.density = args.density
         self.overlapping = args.overlapping
-        self.all_classes = args.all_classes
         self.df = None
         self.gryf = None
         self.slyt = None
@@ -82,17 +81,14 @@ class Histogram:
 
     def press(self, event):
         if event.key != 'q':
-            if self.all_classes:
-                if event.key == 'right':
-                    self.stack_index += 1
-                elif event.key == 'left':
-                    self.stack_index -= 1
+            if event.key == 'right':
+                self.stack_index += 1
+            elif event.key == 'left':
+                self.stack_index -= 1
             if event.key == 'o':
                 self.overlapping = not self.overlapping
             elif event.key == 'd':
                 self.density = not self.density
-            elif event.key == 'a':
-                self.all_classes = not self.all_classes
             if self.stack_index > len(self.stack) - 1:
                 self.stack_index = 0
             elif self.stack_index < 0:
@@ -126,7 +122,6 @@ class Histogram:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("data_file", help="the csv file containing the data set", type=lambda x: is_valid_file(parser, x))
-    parser.add_argument("-a", "--all_classes", help="display an histogram for each course", action="store_true")
     parser.add_argument("-o", "--overlapping", help="display the houses on top of each other", action="store_true")
     parser.add_argument("-d", "--density", help="y axis in percentage instead of number of students", action="store_true")
     parser.add_argument("-b", "--bins", help="Number of bins (intervals) per house", type=positive_int_type, default=10)
