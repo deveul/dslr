@@ -11,7 +11,8 @@ from pandas.api.types import is_numeric_dtype
 import numpy as np
 from utils.visuals import plot_cost_history
 from utils.log_reg import LogReg
-import scipy.stats as ss
+from utils.stats_functions import dslr_mean
+from utils.stats_functions import dslr_std
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -34,11 +35,14 @@ class Train:
 
     def read_data(self):
         df = pd.read_csv(self.data_file, usecols=['Hogwarts House', 'Astronomy', 'Herbology', 'Ancient Runes'])
-        df = df.fillna(df.mean())
+        for column in df:
+            if is_numeric_dtype(df[column].dtypes):
+                df[column] = df[column].fillna(dslr_mean(df[column].dropna()))
+                df[column] = self.standardize_values(df[column])
         self.df = df
 
-    def normalize_values(self, X):
-        X = (X - np.mean(X)) / np.std(X)
+    def standardize_values(self, X):
+        X = (X - dslr_mean(X)) / dslr_std(X)
         return X
 
     def save_values(self, params):
@@ -53,10 +57,6 @@ class Train:
     def train(self):
         houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
         X = np.array(self.df.drop(columns=['Hogwarts House']))
-        # X = self.normalize_values(X)
-        X = np.array(ss.zscore(X))
-        # print("First five rows of X:")
-        # print(X[:5])
         X = np.hstack((np.ones((len(X), 1)), X))
         y = np.array(self.df['Hogwarts House'])
         y = y.reshape(y.shape[0], 1)

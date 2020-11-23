@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 from pandas.api.types import is_numeric_dtype
 from matplotlib import pyplot as plt
-import scipy.stats as ss
+from utils.stats_functions import dslr_mean
+from utils.stats_functions import dslr_std
 
 def is_valid_csv_file(parser, arg):
     if not os.path.exists(arg):
@@ -55,7 +56,6 @@ class Predict:
         self.slytherin = np.array(weights["Slytherin"])
         self.ravenclaw = np.array(weights["Ravenclaw"])
         self.hufflepuff = np.array(weights["Hufflepuff"])
-        print(self.gryffindor)
         return weights
 
     def save_values(self):
@@ -63,7 +63,7 @@ class Predict:
                     'Hogwarts House': self.houses})
         try:
             df.to_csv('./houses.csv', index=False)
-            print("houses.csv updated")
+            print("houses.csv created or updated")
         except PermissionError:
             print("Vous n'avez pas les droits pour écrire dans le fichier houses.json")
             exit()
@@ -75,11 +75,6 @@ class Predict:
         return 1 / (1 + np.exp(-x))
     
     def compute(self, row):
-        # row = np.array(row)
-        # row = np.hstack((row, 1))
-        if self.index == 0:
-            print(row)
-            self.index += 1
         gryf = np.dot(row, self.gryffindor)
         slyt = np.dot(row ,self.slytherin)
         rave = np.dot(row, self.ravenclaw)
@@ -93,27 +88,22 @@ class Predict:
         else:
             return "Hufflepuff"
 
+    def standardize_values(self, X):
+        X = (X - dslr_mean(X)) / dslr_std(X)
+        return X
+
     def predict(self):
         df = pd.read_csv(self.data_file, usecols=['Astronomy', 'Herbology', 'Ancient Runes'])
-        df.fillna(df.mean(),inplace=True)
+        for column in df:
+            if is_numeric_dtype(df[column].dtypes):
+                df[column] = df[column].fillna(dslr_mean(df[column].dropna()))
+                df[column] = self.standardize_values(df[column])
         X = np.array(df)
-        X = np.array(ss.zscore(X))
         X = np.hstack((np.ones((len(X), 1)), X))
-        # gryf = np.dot(X, self.gryffindor)
-        # slyt = np.dot(X ,self.slytherin)
-        # rave = np.dot(X, self.ravenclaw)
-        # huff = np.dot(X, self.hufflepuff)
-        # result = np.where(gryf >= slyt, "Gryffindor", "Slytherin")
-        # result2 = np.where(rave >= gryf, "Ravenclaw", result)
-        # result3 = np.where(huff >= , "Hufflepuff", result2)
-        # result = np.max([gryf,slyt,rave,huff],axis=0, initial=-99999999, where=self.compare(gryf,slyt,rave,huff))
-        # print(result[15:25])
         indexes = []
         houses = []
-        i = 0
-        for _, row in enumerate(X):
+        for i, row in enumerate(X):
             indexes.append(i)
-            i += 1
             houses.append(self.compute(row))
         return indexes, houses
 
