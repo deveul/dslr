@@ -56,13 +56,27 @@ def is_valid_file(parser, arg):
     else:
         return arg
 
+def save_output(filename, output):
+    filename = filename + "-dslr.txt"
+    try:
+        with open(filename, 'w') as output_file:
+            output_file.write(output)
+    except:
+        print("Error trying to write to the file {}".format(filename))
+        exit()
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("data_file", help="the csv file containing the data set", type=lambda x: is_valid_file(parser, x))
     parser.add_argument("-a", "--advanced", help="calculate other useful statistics on each columm", action="store_true")
+    parser.add_argument("-o", "--out", help="save the output to the specified file", nargs='?', const="describe", action="store")
     args = parser.parse_args()
     describe, headers = analyse_data(args.data_file, args.advanced)
-    print(tabulate(describe, headers, tablefmt="github", floatfmt=".6f"))
+    output = tabulate(describe, headers, tablefmt="github", floatfmt=".6f")
+    if args.out:
+        save_output(args.out, output)
+    else:
+        print(output)
 
 if __name__ == "__main__":
     main()
