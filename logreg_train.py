@@ -11,8 +11,6 @@ from pandas.api.types import is_numeric_dtype
 import numpy as np
 from utils.visuals import plot_cost_history
 from utils.log_reg import LogReg
-from utils.stats_functions import dslr_sum
-from utils.stats_functions import calculate_std_var
 import scipy.stats as ss
 
 def is_valid_file(parser, arg):
