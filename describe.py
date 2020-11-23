@@ -8,12 +8,16 @@ from pandas.api.types import is_numeric_dtype
 import numpy as np
 import math
 from tabulate import tabulate
-from utils.stats_functions import dslr_sum
-from utils.stats_functions import calculate_std_var
-from utils.stats_functions import get_quantile
-from utils.stats_functions import calculate_skewness_kurtosis
-from utils.stats_functions import calculate_median_absolute_deviation
-from utils.stats_functions import calculate_mean_absolute_deviation
+from utils.stats_functions import dslr_mean
+from utils.stats_functions import dslr_min
+from utils.stats_functions import dslr_max
+from utils.stats_functions import dslr_std
+from utils.stats_functions import dslr_var
+from utils.stats_functions import dslr_quantile
+from utils.stats_functions import dslr_skewness
+from utils.stats_functions import dslr_kurtosis
+from utils.stats_functions import dslr_median_absolute_deviation
+from utils.stats_functions import dslr_mean_absolute_deviation
 
 def analyse_data(data_file, advanced):
     df = pd.read_csv(data_file)
@@ -25,15 +29,20 @@ def analyse_data(data_file, advanced):
     for column in df.columns:
         if is_numeric_dtype(df[column].dtypes):
             headers.append(column)
-            count, mean = dslr_sum(df[column].dropna())
-            std, var = calculate_std_var(df[column].dropna(), mean, count)
-            minimum, maximum, quarter, median, three_quarter = get_quantile(df[column].dropna(), count)
+            count = len(df[column].dropna())
+            mean = dslr_mean(df[column].dropna())
+            std = dslr_std(df[column].dropna())
+            minimum = dslr_min(df[column].dropna())
+            maximum = dslr_max(df[column].dropna())
+            quarter, median, three_quarter = dslr_quantile(df[column].dropna())
             new_column = [[count], [mean], [std], [minimum], [quarter], [median], [three_quarter], [maximum]]
             describe = np.append(describe, new_column, axis=1)
             if advanced:
-                skew, kurt = calculate_skewness_kurtosis(df[column].dropna(), mean, std, count)
-                mad = calculate_median_absolute_deviation(df[column].dropna(), median, count)
-                mean_ad = calculate_mean_absolute_deviation(df[column].dropna(), mean, count)
+                var = dslr_var(df[column].dropna())
+                skew = dslr_skewness(df[column].dropna())
+                kurt = dslr_kurtosis(df[column].dropna())
+                mad = dslr_median_absolute_deviation(df[column].dropna())
+                mean_ad = dslr_mean_absolute_deviation(df[column].dropna())
                 describe_advanced = np.append(describe_advanced, [[maximum - minimum], [var], [skew], [kurt], [mad], [mean_ad]], axis=1)
     if advanced:
         describe = np.append(describe, describe_advanced, axis=0)

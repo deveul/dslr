@@ -8,45 +8,59 @@ def covariance(x, y, x_mean, y_mean):
     return np.sum((x - x_mean) * (y - y_mean)) / (len(x) - 1)
 
 def pearson_core(x, y):
-    _, y_mean = dslr_sum(y.dropna())
-    _, x_mean = dslr_sum(x.dropna())
+    y_mean = dslr_mean(y.dropna())
+    x_mean = dslr_mean(x.dropna())
     x = x.fillna(x_mean)
     y = y.fillna(y_mean)
     cov = covariance(x, y, x_mean, y_mean)
-    x_std, _ = calculate_std_var(x, x_mean, len(x))
-    y_std, _ = calculate_std_var(y, y_mean, len(y))
+    x_std = dslr_std(x)
+    y_std = dslr_std(y)
     return cov / (x_std * y_std)
 
-def dslr_sum(values):
+def dslr_mean(values):
     my_sum = float(0)
-    count = len(values)
     for item in values:
         my_sum += item
-    return [count, my_sum / count]
+    return my_sum / len(values)
 
-def calculate_std_var(values, mean, count):
+def dslr_std(values):
+    std = dslr_var(values) ** 0.5
+    return std
+
+def dslr_var(values):
     my_sum = 0
+    values_mean = dslr_mean(values)
     for value in values:
-        my_sum += (value - mean) ** 2
-    var = my_sum / (count - 1)
-    std = var ** 0.5
-    return std, var
+        my_sum += (value - values_mean) ** 2
+    var = my_sum / (len(values) - 1)
+    return var
 
-def calculate_skewness_kurtosis(values, mean, std, count):
+def dslr_skewness(values):
+    mean = dslr_mean(values)
+    std = dslr_std(values)
+    count = len(values)
     sum_skew = 0
+    for value in values:
+        sum_skew += (value - mean) ** 3
+    skewness = sum_skew / ((count - 1) * (std ** 3))
+    return skewness
+
+def dslr_kurtosis(values):
+    mean = dslr_mean(values)
+    count = len(values)
     sum_kurt = 0
     sum_kurt_deno = 0
     for value in values:
-        sum_skew += (value - mean) ** 3
         sum_kurt += (value - mean) ** 4
         sum_kurt_deno += (value - mean) ** 2
-    skewness = sum_skew / ((count - 1) * (std ** 3))
     kurtosis_num = sum_kurt / count
     kurtosis_deno = (sum_kurt_deno / count) ** 2
     kurtosis = kurtosis_num / kurtosis_deno - 3
-    return skewness, kurtosis
+    return kurtosis
 
-def calculate_median_absolute_deviation(values, median, count):
+def dslr_median_absolute_deviation(values):
+    median = dslr_quantile(values)[1]
+    count = len(values)
     new_values = sorted([abs(x - median) for x in values])
     index_median = (count - 1) / 2
     median_absolute_deviation = None
@@ -58,7 +72,9 @@ def calculate_median_absolute_deviation(values, median, count):
         median_absolute_deviation = (lower + upper) / 2
     return median_absolute_deviation
 
-def calculate_mean_absolute_deviation(values, mean, count):
+def dslr_mean_absolute_deviation(values):
+    mean = dslr_mean(values)
+    count = len(values)
     sum_mean_ad = 0
     for value in values:
         if not np.isnan(value):
@@ -69,10 +85,17 @@ def calculate_mean_absolute_deviation(values, mean, count):
     mean_absolute_deviation = sum_mean_ad / count
     return mean_absolute_deviation
 
-def get_quantile(column, count):
+def dslr_min(values):
+    values = sorted(values)
+    return values[0]
+
+def dslr_max(values):
+    values = sorted(values)
+    return values[len(values) - 1]
+
+def dslr_quantile(column):
     c = sorted(column)
-    minimum = c[0]
-    maximum = c[count - 1]
+    count = len(c)
     index_quarter = (count - 1) / 4
     quarter = None
     if index_quarter.is_integer():
@@ -115,4 +138,4 @@ def get_quantile(column, count):
             upper = c[math.ceil(index_three_quarter)]
             lower = c[math.floor(index_three_quarter)]
             three_quarter = (3 * lower + upper) / 4
-    return minimum, maximum, quarter, median, three_quarter
+    return quarter, median, three_quarter
