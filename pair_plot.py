@@ -20,6 +20,7 @@ def read_data(data_file):
     try:
         df = pd.read_csv(data_file)
         df = df.drop(columns=['Index', 'Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts'])
+        # df = df.drop(columns=['Index', 'Arithmancy', 'Care of Magical Creatures'])
         palette={"Gryffindor": "r", "Slytherin": "darkgreen", "Ravenclaw": "royalblue", "Hufflepuff": "gold"}
         sns.pairplot(df, hue="Hogwarts House", height=1, plot_kws={"s": 3}, palette=palette)
         plt.show()

@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas.api.types import is_numeric_dtype
 import numpy as np
+from utils.visuals import plot_cost_history
+from utils.log_reg import LogReg
+from utils.stats_functions import dslr_sum
+from utils.stats_functions import calculate_std_var
+import scipy.stats as ss
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -18,66 +23,11 @@ def is_valid_file(parser, arg):
     else:
         return arg
 
-def sigmoid_function(x):
-    return 1 / (1 + np.exp(-x))
-
-def compute_cost(X, y, params):
-    m = len(y)
-    h = sigmoid_function(X.dot(params))
-    epsilon = 1e-5
-    cost = (1/m)*(((-y).T.dot(np.log(h + epsilon)))-((1-y).T.dot(np.log(1-h + epsilon))))
-    return cost
-
-def grad(X, y, params):
-    m = len(y)
-    return  1/m * X.T.dot((sigmoid_function(X.dot(params)) - y))
-
-def gradient_descent(X, y, params, learning_rate, n_iterations):
-    cost_history = np.zeros(n_iterations)
-    for i in range(n_iterations):
-        params = params - learning_rate * grad(X, y, params)
-        cost_history[i] = compute_cost(X, y, params)
-    return params, cost_history
-
-def predict(X, params):
-    return np.round(sigmoid_function(X.dot(params)))
-
-def scatter_data(X, y):
-    sns.set_style('white')
-    sns.scatterplot(x=X[:,0],y=X[:,1],hue=y.reshape(-1))
-    plt.show()
-
-def plot_cost_history(cost_history):
-    plt.figure()
-    sns.set_style('white')
-    colors = ['r', 'g', 'b', 'gold']
-    for i, cost in enumerate(cost_history):
-        plt.plot(range(len(cost)), cost, c=colors[i])
-    plt.title("Convergence Graph of Cost Function")
-    plt.xlabel("Number of Iterations")
-    plt.ylabel("Cost")
-    plt.show()
-
-def plot_result(params_optimal, X, y):
-    slope = -(params_optimal[1] / params_optimal[2])
-    intercept = -(params_optimal[0] / params_optimal[2])
-    
-    sns.set_style('white')
-    sns.scatterplot(x=X[:,1],y=X[:,2],hue=y.reshape(-1))
-    
-    ax = plt.gca()
-    ax.autoscale(False)
-    x_vals = np.array(ax.get_xlim())
-    y_vals = intercept + (slope * x_vals)
-    plt.plot(x_vals, y_vals, c="k")
-    plt.show()
-
 class Train:
     def __init__(self, data_file):
         self.data_file = data_file
         self.df = None
-        self.coef = {}
-        self.cost_history = []
+        self.reg = None
 
     def get_house(self, house):
         df_house = self.df.copy()
@@ -85,17 +35,18 @@ class Train:
         return df_house
 
     def read_data(self):
-        df = pd.read_csv(self.data_file)
-        df.dropna(inplace=True)
-        self.df = df[['Hogwarts House', 'Astronomy', 'Herbology', 'Ancient Runes']]
+        df = pd.read_csv(self.data_file, usecols=['Hogwarts House', 'Astronomy', 'Herbology', 'Ancient Runes'])
+        df = df.fillna(df.mean())
+        self.df = df
 
-    def normalize_values(self):
-        pass
+    def normalize_values(self, X):
+        X = (X - np.mean(X)) / np.std(X)
+        return X
 
-    def save_values(self):
+    def save_values(self, params):
         try:
             with open('value_logreg.json', 'w') as json_file:
-                json.dump(self.coef, json_file)
+                json.dump(params, json_file)
                 print("value_logreg.json updated")
         except PermissionError:
             print("Vous n'avez pas les droits pour écrire dans le fichier value_lr.json")
@@ -103,18 +54,19 @@ class Train:
 
     def train(self):
         houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
-        for house in houses:
-            df_house = self.get_house(house)
-            X = np.hstack((np.ones((len(df_house), 1)),df_house.drop(columns=['Hogwarts House'])))
-            X = (X - np.mean(X)) / np.std(X)
-            y = df_house['Hogwarts House']
-            initial_thetas = np.zeros(X.shape[1])
-            learning_rate = 0.01
-            iterations = 3000
-            theta, cost_history = gradient_descent(X, y, initial_thetas, learning_rate, iterations)
-            self.cost_history.append(cost_history)
-            print(theta)
-            self.coef[house] = theta.tolist()
+        X = np.array(self.df.drop(columns=['Hogwarts House']))
+        # X = self.normalize_values(X)
+        X = np.array(ss.zscore(X))
+        # print("First five rows of X:")
+        # print(X[:5])
+        X = np.hstack((np.ones((len(X), 1)), X))
+        y = np.array(self.df['Hogwarts House'])
+        y = y.reshape(y.shape[0], 1)
+        learning_rate = 0.01
+        iterations = 3000
+        reg = LogReg(X, y, learning_rate, iterations, houses)
+        params, self.cost_history = reg.gradient_descent()
+        self.save_values(params)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -124,7 +76,6 @@ def main():
     train = Train(args.data_file)
     train.read_data()
     train.train()
-    train.save_values()
     if args.cost_history:
         plot_cost_history(train.cost_history)
 
