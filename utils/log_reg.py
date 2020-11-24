@@ -14,22 +14,22 @@ class LogReg():
         self.houses = houses
         self.params = params
 
-    def predict(self, X):
-        return self.sigmoid_function(X.dot(self.params))
+    def predict(self, params):
+        return self.sigmoid_function(self.X.dot(params))
 
     def sigmoid_function(self, x):
         return 1 / (1 + np.exp(-x))
     
     def compute_cost(self, params, y):
         m = len(y)
-        h = self.sigmoid_function(self.X.dot(params))
+        h = self.predict(params)
         epsilon = 1e-5
         cost = (1/m)*(((-y).T.dot(np.log(h + epsilon)))-((1-y).T.dot(np.log(1-h + epsilon))))
         return cost
     
     def gradient(self, params, y):
         m = len(y)
-        y_pred = self.sigmoid_function(self.X.dot(params))
+        y_pred = self.predict(params)
         return  self.X.T.dot((y_pred - y)) / m
     
     def gradient_descent(self):
