@@ -16,11 +16,15 @@ def is_valid_file(parser, arg):
     else:
         return arg
 
-def read_data(data_file):
+def read_data(data_file, content):
     try:
-        df = pd.read_csv(data_file)
-        df = df.drop(columns=['Index', 'Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts'])
-        # df = df.drop(columns=['Index', 'Arithmancy', 'Care of Magical Creatures'])
+        df = None
+        if content == "train":
+            df = pd.read_csv(data_file, usecols=['Hogwarts House', 'Astronomy', 'Herbology', 'Ancient Runes'])
+        elif content == "normal":
+            df = pd.read_csv(data_file, usecols=lambda col: col not in ['Index', 'Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts'])
+        else:
+            df = pd.read_csv(data_file, usecols=lambda col: col not in ['Index'])
         palette={"Gryffindor": "r", "Slytherin": "darkgreen", "Ravenclaw": "royalblue", "Hufflepuff": "gold"}
         sns.pairplot(df, hue="Hogwarts House", height=1, plot_kws={"s": 3}, palette=palette)
         plt.show()
@@ -31,8 +35,9 @@ def read_data(data_file):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("data_file", help="the csv file containing the data set", type=lambda x: is_valid_file(parser, x))
+    parser.add_argument("-c", "--content", help="the pair_plot you want to display", choices=["train", "normal", "all"], default="normal")
     args = parser.parse_args()
-    read_data(args.data_file)
+    read_data(args.data_file, args.content)
     
 if __name__ == "__main__":
     main()
