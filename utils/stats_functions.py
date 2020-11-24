@@ -4,6 +4,10 @@
 import numpy as np
 import math
 
+def z_score(values):
+    X = np.array(values)
+    return (X - dslr_mean(X)) / dslr_std(X)
+
 def covariance(x, y, x_mean, y_mean):
     return np.sum((x - x_mean) * (y - y_mean)) / (len(x) - 1)
 

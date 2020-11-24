@@ -10,6 +10,8 @@ from pandas.api.types import is_numeric_dtype
 from matplotlib import pyplot as plt
 from utils.stats_functions import dslr_mean
 from utils.stats_functions import dslr_std
+from utils.stats_functions import dslr_max
+from utils.stats_functions import z_score
 
 def is_valid_csv_file(parser, arg):
     if not os.path.exists(arg):
@@ -35,8 +37,7 @@ class Predict:
         self.ravenclaw = None
         self.hufflepuff = None
         self.weigths = self.read_weights(weights_file)
-        self.index = 0
-        self.indexes, self.houses = self.predict()
+        self.indexes, self.houses = self.predict_all()
 
     def read_weights(self, weights_file):
         weights = None
@@ -74,38 +75,25 @@ class Predict:
     def sigmoid_function(self, x):
         return 1 / (1 + np.exp(-x))
     
-    def compute(self, row):
-        gryf = np.dot(row, self.gryffindor)
-        slyt = np.dot(row ,self.slytherin)
-        rave = np.dot(row, self.ravenclaw)
-        huff = np.dot(row, self.hufflepuff)
-        if gryf > max([slyt, rave, huff]):
-            return "Gryffindor"
-        elif slyt > max([gryf, rave, huff]):
-            return "Slytherin"
-        elif rave > max([gryf, slyt, huff]):
-            return "Ravenclaw"
-        else:
-            return "Hufflepuff"
+    def predict(self, X, params):
+        return self.sigmoid_function(X.dot(params))
 
-    def standardize_values(self, X):
-        X = (X - dslr_mean(X)) / dslr_std(X)
-        return X
-
-    def predict(self):
+    def predict_all(self):
         df = pd.read_csv(self.data_file, usecols=['Astronomy', 'Herbology', 'Ancient Runes'])
         for column in df:
             if is_numeric_dtype(df[column].dtypes):
                 df[column] = df[column].fillna(dslr_mean(df[column].dropna()))
-                df[column] = self.standardize_values(df[column])
+                df[column] = z_score(df[column])
         X = np.array(df)
         X = np.hstack((np.ones((len(X), 1)), X))
-        indexes = []
-        houses = []
-        for i, row in enumerate(X):
-            indexes.append(i)
-            houses.append(self.compute(row))
-        return indexes, houses
+        gryf = self.predict(X, self.gryffindor)
+        slyt = self.predict(X, self.slytherin)
+        rave = self.predict(X, self.ravenclaw)
+        huff = self.predict(X, self.hufflepuff)
+        data = np.hstack((gryf, slyt, rave, huff))
+        df = pd.DataFrame(data, columns=["Gryffindor", "Slytherin", "Ravenclaw", "Hufflepuff"])
+        houses = df.idxmax(axis=1)
+        return range(len(houses)), houses
 
 def main():
     parser = argparse.ArgumentParser()

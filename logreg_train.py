@@ -13,6 +13,7 @@ from utils.visuals import plot_cost_history
 from utils.log_reg import LogReg
 from utils.stats_functions import dslr_mean
 from utils.stats_functions import dslr_std
+from utils.stats_functions import z_score
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -38,12 +39,8 @@ class Train:
         for column in df:
             if is_numeric_dtype(df[column].dtypes):
                 df[column] = df[column].fillna(dslr_mean(df[column].dropna()))
-                df[column] = self.standardize_values(df[column])
+                df[column] = z_score(df[column])
         self.df = df
-
-    def standardize_values(self, X):
-        X = (X - dslr_mean(X)) / dslr_std(X)
-        return X
 
     def save_values(self, params):
         try:
