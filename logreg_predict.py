@@ -9,6 +9,7 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 from matplotlib import pyplot as plt
+from utils.log_reg import predict
 from utils.stats_functions import dslr_mean
 from utils.stats_functions import dslr_std
 from utils.stats_functions import dslr_max
@@ -74,12 +75,6 @@ class Predict:
             print("Erreur inconnue")
             exit()
 
-    def sigmoid_function(self, x):
-        return 1 / (1 + np.exp(-x))
-    
-    def predict(self, X, params):
-        return self.sigmoid_function(X.dot(params))
-
     def predict_all(self):
         df = pd.read_csv(self.data_file, usecols=['Astronomy', 'Herbology', 'Ancient Runes'])
         for column in df:
@@ -89,10 +84,10 @@ class Predict:
         self.df = df
         X = np.array(df)
         X = np.hstack((np.ones((len(X), 1)), X))
-        gryf = self.predict(X, self.gryffindor)
-        slyt = self.predict(X, self.slytherin)
-        rave = self.predict(X, self.ravenclaw)
-        huff = self.predict(X, self.hufflepuff)
+        gryf = predict(X, self.gryffindor)
+        slyt = predict(X, self.slytherin)
+        rave = predict(X, self.ravenclaw)
+        huff = predict(X, self.hufflepuff)
         data = np.hstack((gryf, slyt, rave, huff))
         df = pd.DataFrame(data, columns=["Gryffindor", "Slytherin", "Ravenclaw", "Hufflepuff"])
         houses = df.idxmax(axis=1)
