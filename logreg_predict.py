@@ -56,10 +56,14 @@ class Predict:
         except:
             print("Erreur inconnue")
             exit()
-        self.gryffindor = np.array(weights["Gryffindor"])
-        self.slytherin = np.array(weights["Slytherin"])
-        self.ravenclaw = np.array(weights["Ravenclaw"])
-        self.hufflepuff = np.array(weights["Hufflepuff"])
+        try:
+            self.gryffindor = np.array(weights["Gryffindor"])
+            self.slytherin = np.array(weights["Slytherin"])
+            self.ravenclaw = np.array(weights["Ravenclaw"])
+            self.hufflepuff = np.array(weights["Hufflepuff"])
+        except:
+            print("Wrong formatage of the wieght file")
+            exit()
         return weights
 
     def save_values(self):
