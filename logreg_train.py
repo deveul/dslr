@@ -64,7 +64,7 @@ class Train:
         if gradient_type == "mini-batch":
             params, self.cost_history = mini_batch_gradient_descent(houses, X, y)
         elif gradient_type == "stochastic":
-            params, self.cost_history = mini_batch_gradient_descent(houses, X, y, learning_rate=0.01, batch_size=1, iterations=1)
+            params, self.cost_history = mini_batch_gradient_descent(houses, X, y, batch_size=1, iterations=1)
         else:
             params, self.cost_history = gradient_descent(houses, X, y, learning_rate, iterations)
         self.save_values(params)
