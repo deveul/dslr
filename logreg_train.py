@@ -11,6 +11,7 @@ from pandas.api.types import is_numeric_dtype
 import numpy as np
 from utils.visuals import plot_cost_history
 from utils.log_reg import gradient_descent
+from utils.log_reg import mini_batch_gradient_descent
 # from utils.log_reg import stochastic_gradient_descent
 from utils.stats_functions import dslr_mean
 from utils.stats_functions import dslr_std
@@ -52,7 +53,7 @@ class Train:
             print("Vous n'avez pas les droits pour écrire dans le fichier value_lr.json")
             exit()
 
-    def train(self, stochastic):
+    def train(self, gradient_type):
         houses = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
         X = np.array(self.df.drop(columns=['Hogwarts House']))
         X = np.hstack((np.ones((len(X), 1)), X))
@@ -60,22 +61,23 @@ class Train:
         y = y.reshape(y.shape[0], 1)
         learning_rate = 0.01
         iterations = 3000
-        # if stochastic:
-            # params, self.cost_history = stochastic_gradient_descent(houses, X, y)
-            # print(len(self.cost_history))
-        # else:
-        params, self.cost_history = gradient_descent(houses, X, y, learning_rate, iterations)
+        if gradient_type == "mini-batch":
+            params, self.cost_history = mini_batch_gradient_descent(houses, X, y)
+        elif gradient_type == "stochastic":
+            params, self.cost_history = mini_batch_gradient_descent(houses, X, y, learning_rate=0.01, batch_size=1, iterations=1)
+        else:
+            params, self.cost_history = gradient_descent(houses, X, y, learning_rate, iterations)
         self.save_values(params)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("data_file", help="the csv file containing the data set", type=lambda x: is_valid_file(parser, x))
-    parser.add_argument("-c", "--cost_history", help="the csv file containing the data set", action="store_true")
-    parser.add_argument("-s", "--stochastic", help="use a stochastic gradient descent", action="store_true")
+    parser.add_argument("-c", "--cost_history", help="display a graph of the cost evolution", action="store_true")
+    parser.add_argument("-t", "--type", help="the type of gradient descent algorythm you want to use", choices=["mini-batch", "batch", "stochastic"], default="batch")
     args = parser.parse_args()
     train = Train(args.data_file)
     train.read_data()
-    train.train(args.stochastic)
+    train.train(args.type)
     if args.cost_history:
         plot_cost_history(train.cost_history)
 
