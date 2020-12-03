@@ -32,7 +32,7 @@ def gradient_descent(categories, X, Y, learning_rate=0.01, iterations=3000):
         for i in range(iterations):
             params = params - learning_rate * gradient(params, X, y)
             cost_history[i] = compute_cost(params, X, y)
-        params_dict[category] = params.tolist()
+        params_dict[category] = params.flatten().tolist()
         costs.append(cost_history)
     return params_dict, costs
 
@@ -57,6 +57,6 @@ def mini_batch_gradient_descent(categories, X, Y, learning_rate=0.1, batch_size=
                 indice = i * 50 + j
                 j += 1
                 cost_history[indice] = compute_cost(params, X, y)
-        params_dict[category] = params.tolist()
+        params_dict[category] = params.flatten().tolist()
         costs.append(cost_history)
     return params_dict, costs

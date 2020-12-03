@@ -57,10 +57,10 @@ class Predict:
             print("Erreur inconnue")
             exit()
         try:
-            self.gryffindor = np.array(weights["Gryffindor"])
-            self.slytherin = np.array(weights["Slytherin"])
-            self.ravenclaw = np.array(weights["Ravenclaw"])
-            self.hufflepuff = np.array(weights["Hufflepuff"])
+            self.gryffindor = np.array(weights["Gryffindor"]).reshape(4, 1)
+            self.slytherin = np.array(weights["Slytherin"]).reshape(4, 1)
+            self.ravenclaw = np.array(weights["Ravenclaw"]).reshape(4, 1)
+            self.hufflepuff = np.array(weights["Hufflepuff"]).reshape(4, 1)
         except:
             print("Wrong formatage of the wieght file")
             exit()
