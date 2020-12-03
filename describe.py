@@ -69,10 +69,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("data_file", help="the csv file containing the data set", type=lambda x: is_valid_file(parser, x))
     parser.add_argument("-a", "--advanced", help="calculate other useful statistics on each columm", action="store_true")
+    parser.add_argument("-t", "--transpose", help="transpose the display for better reading", action="store_true")
     parser.add_argument("-o", "--out", help="save the output to the specified file", nargs='?', const="describe", action="store")
     args = parser.parse_args()
     describe, headers = analyse_data(args.data_file, args.advanced)
-    output = tabulate(describe, headers, tablefmt="github", floatfmt=".6f")
+    if args.transpose:
+        pd_output = pd.DataFrame(data=describe, columns=headers).T
+        output = tabulate(pd_output, headers="firstrow", tablefmt="github", floatfmt=".6f")
+    else:
+        output = tabulate(describe, headers, tablefmt="github", floatfmt=".6f")
     if args.out:
         save_output(args.out, output)
     else:
