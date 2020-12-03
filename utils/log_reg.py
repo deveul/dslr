@@ -54,9 +54,9 @@ def mini_batch_gradient_descent(categories, X, Y, learning_rate=0.1, batch_size=
             j = 0
             for X_mini, y_mini in yield_mini_batch(X, y, batch_size): 
                 params = params - learning_rate * gradient(params, X_mini, y_mini)
-                indice = i * 50 + j
+                indice = i * (X.shape[0] // batch_size) + j
                 j += 1
-                cost_history[indice] = compute_cost(params, X, y)
+                cost_history[indice] = compute_cost(params, X_mini, y_mini)
         params_dict[category] = params.flatten().tolist()
         costs.append(cost_history)
     return params_dict, costs
