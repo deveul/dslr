@@ -6,7 +6,6 @@ import os.path
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 import numpy as np
-import math
 from tabulate import tabulate
 from utils.stats_functions import dslr_mean
 from utils.stats_functions import dslr_min

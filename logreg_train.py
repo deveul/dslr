@@ -12,7 +12,6 @@ import numpy as np
 from utils.visuals import plot_cost_history
 from utils.log_reg import gradient_descent
 from utils.log_reg import mini_batch_gradient_descent
-# from utils.log_reg import stochastic_gradient_descent
 from utils.stats_functions import dslr_mean
 from utils.stats_functions import dslr_std
 from utils.stats_functions import z_score
@@ -47,7 +46,7 @@ class Train:
     def save_values(self, params):
         try:
             with open('value_logreg.json', 'w') as json_file:
-                json.dump(params, json_file)
+                json.dump(params, json_file, indent=4)
                 print("value_logreg.json updated")
         except PermissionError:
             print("Vous n'avez pas les droits pour écrire dans le fichier value_lr.json")
